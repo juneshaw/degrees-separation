@@ -143,17 +143,20 @@ console.log("separationArray = ", separationArray);
   for (var i = 0; i < separationArray.length; i+=2) {
 
     //Display artist, chain, and work.  First the artist.
-    displayNode(separationArray[i], "artist", i);      // artist
+    displayNode(separationArray[i], "artist", $('#resultsChain'));      // artist
+console.log("displaying artist");
 
     //If this is not the last artist, display the connecting work.
     if ((i+2) <= separationArray.length) {
-      displayNode("|", "chain", i);                   // chain link
-      displayNode(separationArray[i+1], "work", i);  // work
+      displayNode("|", "chain", $('#resultsChain'));                   // chain link
+      displayNode(separationArray[i+1], "work", $('#resultsChain'));  // work
+console.log("displaying movie");
 
       //If there are more artists to follow,
       // display another chain.
       if ((i+2) < separationArray.length)  {
-        displayNode("|", "chain");                  // chain link
+console.log("i+2= ", i+2,  separationArray.length)
+        displayNode("|", "chain", $('#resultsChain'));                  // chain link
       }
     }
   }
@@ -244,14 +247,14 @@ console.log("separationArray = ", separationArray);
 
     //If this is not the last artist, display the connecting work.
     if ((i+2) <= separationArray.length) {
-      displayNode("|", "chain", i);                   // chain link
+      displayNode("|", "chain", $('#resultsImgChain'));                   // chain link
       console.log("calling displayImgNode with movie", i+1, separationArray[i+1]);
       displayImgNode(separationArray[i+1], "movie");  // work
 
       //If there are more artists to follow,
       // display another chain.
       if ((i+2) < separationArray.length)  {
-        displayNode("|", "chain");
+        displayNode("|", "chain", $('#resultsImgChain'));
       }
     }
   }
@@ -289,11 +292,12 @@ function getImagePersonUrl(artist) {
 
 //=======================================================
 // Display one plain node of the chain to the results display.
-function displayNode(text, type, arrayIndex) {
+function displayNode(text, type, container) {
   var node = document.createElement("p");
   node.innerHTML = text;
   $(node).prop("class", "chainNode");
-  $('#resultsChain').append(node);
+  container.append(node);
+  // $('#resultsChain').append(node);
 }
 
 //=======================================================
