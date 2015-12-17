@@ -16,12 +16,18 @@ main {
   width: 100%;
   height: 600px;
   display: flex;
+  background-image: url(cloth-alike.png);
+  background-color: #40a1b2;
 }
 
 #selections {
+  align-items: center;
+  justify-content: center;
   width: 25%;
-  height: 80%;
-  background-color: white;
+  height: 100%;
+  background-color: #a0dbef;
+  align-items: center;
+  justify-content: center;
 }
 
 input {
@@ -30,27 +36,34 @@ input {
 
 #resultsChain {
   width: 30%;
-  background-color: white;
-  height: 80%;
+  /*background-color: white;*/
+  height: 100%;
   /*align-items: center;
   justify-content: center;*/
 }
 
 #resultsImgChain {
   width: 45%;
-  background-color: white;
-  height: 80%;
+  /*background-color: white;*/
+  height: 100%;
   align-items: center;
   justify-content: center;
 }
 
 .imgChainNode {
   display: block;
-  /*width: 50px;*/
+  /*width: 50px; replace with double arrow */
   height: 100px;
 }
 
 .chainNode {
+  margin-left: auto;
+  margin-right: auto;
+  /*display: block;*/
+  display: inline-block;
+width: 100%;
+text-align: center;
+
 }
 
 footer {
@@ -66,8 +79,30 @@ p {
 }
 
 img {
-margin-left:auto;
-margin-right: auto;
-margin-top: 20px;
-margin-bottom: 20px;
+  margin-left:auto;
+  margin-right: auto;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+
+input {
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+button {
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  display: block;
+}
+
+i {
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
 }
