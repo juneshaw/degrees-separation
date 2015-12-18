@@ -21,6 +21,7 @@ var baconKey = "38b99ce9ec87";
 var baconUrlKey = "?p=" + baconKey;
 var baconUrlBase = "http://oracleofbacon.org/cgi-bin/json";
 var baconUrlConnect = baconUrlBase + baconUrlKey;
+var baconUrlCenter = "http://oracleofbacon.org/cgi-bin/xml?p=38b99ce9ec87&center="
 
 var anonymousFile = "css/Questionmark.jpg";
 
@@ -149,24 +150,6 @@ console.log(nameOption)
   });
 }
 
-//=======================================================
-
-//=======================================================
-
-        //KEEP B BELOW
-//
-//   else if (response.status === "spellcheck") {
-// console.log(jsonResponse);
-// console.log(response.matches);
-//
-//     //Pick the first suggested name...FIX this to
-//     // allow spell suggestions to come up.
-//     //Can't call api within an api.
-//     var spellCorrectedActor = response.matches[0];
-//     .replace(response.name, spellCorrectedActor);
-// console.log(url);
-//     apiGet(url, doneBaconOracle, failBaconOracle);
-//   }
 //=======================================================
 
 //=======================================================
@@ -482,6 +465,24 @@ function clearResults() {
 function baconOracleFail(response) {
   console.log("Failed Bacon Oracle");
 }
+//=======================================================
+
+//=======================================================
+// Get the center number for an artist
+// function baconCenter(name);
+
+//
+// Get the name
+//
+// Make API call for center
+//
+// Compute the center number
+//  Parse the XML for the numbers
+//  Compute the average number
+//
+// Return the center number
+
+
 //=======================================================
 
 //=======================================================
