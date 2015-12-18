@@ -22,6 +22,7 @@ var baconUrlKey = "?p=" + baconKey;
 var baconUrlBase = "http://oracleofbacon.org/cgi-bin/json";
 var baconUrlConnect = baconUrlBase + baconUrlKey;
 
+var anonymousFile = "css/Questionmark.jpg";
 
 //=======================================================
 // When user clicks the submit button for connection,
@@ -31,11 +32,30 @@ $('#calcDegSepBtn').click(function() {
   //Replace blanks with + (check all blanks)
   var actor1 = $('#actor1').val().replace(" ", "+");
   var actor2 = $('#actor2').val().replace(" ", "+");
+  console.log("actor1 and actor2: ", actor1, actor2)
   var url = baconUrlConnect + "&a=" + actor1 + "&b=" + actor2;
 
   // Call the API to get the results of the search
   // for this connection.
   apiGet(url, baconOracleDone, baconOracleFail);
+});
+//=======================================================
+
+//=======================================================
+// When user selects a name from the either dropdown spellcheck
+// actor name lists, resend the actor connection request.
+$("#spellList1").change(function () {
+    var name = $(this).find(":selected").text();
+    $('#actor1').val(name);
+    $('#actor1').text(name);
+    $('#spellList1').hide();
+});
+
+$("#spellList2").change(function () {
+  var name = $(this).find(":selected").text();
+  $('#actor2').val(name);
+  $('#actor2').text(name);
+  $('#spellList2').hide();
 });
 //=======================================================
 
@@ -77,11 +97,20 @@ function apiGetWait(urlToGet) {
 //=======================================================
 // When the Bacon Oracle is complete, display the results.
 function baconOracleDone(response) {
+  console.log("response = ", response);
   if (response.status === "spellcheck") {
-    var length = response.length;
-    response.splice(1, length-1);
+    console.log('#actor1 = ', $('#actor1').val());
+    console.log('response.name = ', response.name);
+    var actorNumber = (response.name.toUpperCase() === $('#actor1').val().toUpperCase()) ? 1 : 2;
+    buildSpellList(response.matches, actorNumber);
+
+    // var length = response.length;
+    // response.splice(1, length-1);  //later, look at response.matches[0] and
+    // make another call to baconOracle with that name.
+    // or bring up a pulldown selection.
   } else if (response.status === "error") {
       clearResults();
+      $('#connectionNumber').text(response.message);
       console.log("Error with Bacon Oracle get")
 
   } else if (response.status === "success") {
@@ -93,14 +122,36 @@ function baconOracleDone(response) {
     removeYears(response.link);
 
     //Display the connection chain
-    buildSeparationDisplay(response.link);
+    // buildSeparationDisplay(response.link);
 
     //Display the connection chain with pictures.
     buildSeparationDisplayImgs(response.link);
   }
 
 }
-  //=======================================================
+
+//=======================================================
+function buildSpellList(nameArray, actorNumber) {
+  console.log("actorNumber: ", actorNumber);
+  console.log("nameArray = ", nameArray);
+  $('#spellLists'+actorNumber).empty();
+  nameArray.forEach( function(element) {
+    console.log("element = ", element);
+   var nameOption = document.createElement("option");
+
+   $(nameOption).val(element);
+  //  $(nameOption).attr("value", element);
+   $(nameOption).text(element);
+   $('#spellList'+actorNumber).append($(nameOption));
+   $('#spellList'+actorNumber).show();
+   console.log("making spell checker visible ", actorNumber);
+console.log(nameOption)
+  });
+}
+
+//=======================================================
+
+//=======================================================
 
         //KEEP B BELOW
 //
@@ -199,20 +250,21 @@ function buildSeparationDisplayImgs(separationArray) {
   var urlArray = [];
 
 console.log("separationArrayNameUrls = ", separationArrayNameUrls);
-  return Promise.all(
+  Promise.all(
     separationArrayNameUrls.map(apiGetWait)).then (
       function(idArray) {
         console.log("idArray = ", idArray);
         idNameArray = saveIdNames(idArray);
         urlArray = idArray.map(convertUrlToId);
         console.log("urlArray = ", urlArray);
-        return Promise.all (
+         Promise.all (
           urlArray.map(apiGetWait)).then (
             function(imgArray) {
               console.log("imgArray = ", imgArray);
+              $('#connectionNumber').text(imgArray.length);
               displaySeparationImgs(imgArray, idNameArray);
-              console.log($('img.caption'));
-              $('img.caption').captionjs();
+              // console.log($('img.caption'));
+              // $('img.caption').captionjs();
             }
           )
       }
@@ -290,15 +342,16 @@ console.log("idNameArray = ", idNameArray);
     }
 console.log(name);
 console.log("separationArray[i]", separationArray[i]);
+console.log(idNameArray, "idNameArray was:");
     var artistFilePath =
-    displayImgNode(separationArray[i], "artist", name);      // artist
+    displayImgNode(separationArray[i], "artist", idNameArray[i].name);      // artist
 
     //If this is not the last artist, display the connecting work.
     if ((i+2) <= separationArray.length) {
       displayChainNode($('#resultsImgChain'));
       // displayNode("|", "chain", $('#resultsImgChain'));                   // chain link
       console.log("calling displayImgNode with movie", i+1, separationArray[i+1]);
-      displayImgNode(separationArray[i+1], "movie", name);  // work
+      displayImgNode(separationArray[i+1], "movie", idNameArray[i+1].name);  // work
 
       //If there are more artists to follow,
       // display another chain.
@@ -366,26 +419,42 @@ function displayImgNode(image, type, name) {
   var filePath = imgFilePath(image, type);
   console.log("FILEPATH = ", filePath);
 
-  var node = document.createElement("img");
+  var divNode = document.createElement("div");
+  $('#resultsImgChain').append(divNode);
+
+  var imgNode = document.createElement("img");
 console.log("image = ", image);
-  $(node).attr("src", filePath);
-  $(node).prop("class", "imgChainNode");
-  $(node).attr("data-caption", name);
-console.log("node = ", node);
-console.log($(node).attr("src"));
-  $('#resultsImgChain').append(node);
+  $(imgNode).attr("src", filePath);
+  $(imgNode).prop("class", "imgChainNode");
+  $(imgNode).attr("data-caption", name);
+console.log("imgNode = ", imgNode);
+console.log($(imgNode).attr("src"));
+  $(divNode).append(imgNode);
+  var captionNode = document.createElement("p");
+  $(captionNode).text(name);
+  $(divNode).append(captionNode);
 }
 
 //=======================================================
 // Build the image file path for the image location.
 function imgFilePath(filePath, type) {
+  var wholeFilePath ="";
   console.log("FILEPATHHHH = ", filePath, "type = ", type);
   console.log("type =", type);
   if (type === "artist") {
-    var wholeFilePath = tmdbImgUrlPerson + filePath["profiles"][0]["file_path"];
-
+    if (filePath["profiles"].length === 0) {
+      console.log("no picture");
+      wholeFilePath = anonymousFile;
+    } else {
+      wholeFilePath = tmdbImgUrlPerson + filePath["profiles"][0]["file_path"];
+    }
   } else {
-    var wholeFilePath = tmdbImgUrlMovie + filePath["backdrops"][0]["file_path"];
+      if (filePath["backdrops"].length === 0) {
+        console.log("no picture");
+        wholeFilePath = anonymousFile;
+      } else {
+         wholeFilePath = tmdbImgUrlMovie + filePath["backdrops"][0]["file_path"];
+      }
   }
 console.log("filePath =" , wholeFilePath);
   return (wholeFilePath);
@@ -399,6 +468,13 @@ console.log("filePath =" , wholeFilePath);
 function clearResults() {
   $('#resultsChain').empty();
   $('#resultsImgChain').empty();
+  $('#spellList1').find("option:gt(0)").remove();
+  $('#spellList2').find("option:gt(0)").remove();
+
+  // $('#spellList1').empty();
+  // $('#spellList2').empty();
+  $('#spellList1').hide();
+  $('#spellList2').hide();
 }
 
 //=======================================================
