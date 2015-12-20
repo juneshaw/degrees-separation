@@ -33,7 +33,6 @@ $('#calcDegSepBtn').click(function() {
   //Replace blanks with + (check all blanks)
   var actor1 = $('#actor1').val().replace(" ", "+");
   var actor2 = $('#actor2').val().replace(" ", "+");
-  console.log("actor1 and actor2: ", actor1, actor2)
   var url = baconUrlConnect + "&a=" + actor1 + "&b=" + actor2;
 
   // Call the API to get the results of the search
@@ -63,7 +62,7 @@ $("#spellList2").change(function () {
 //=======================================================
 // Call an API with the given callbacks
 function apiGet(urlToGet, doneFcn, failFcn, doneArray) {
-console.log("url to get: ", urlToGet);
+  console.log(urlToGet);
   var getter = $.ajax({
     url: urlToGet,
     method: "GET",
@@ -74,7 +73,7 @@ console.log("url to get: ", urlToGet);
     doneFcn(response);
   });
 
-  getter.fail(function() {
+  getter.fail(function(response) {
     failFcn(response);
   });
 }
@@ -83,14 +82,12 @@ console.log("url to get: ", urlToGet);
 //=======================================================
 // Call an API with no callbacks: promises use these.
 function apiGetWait(urlToGet) {
-  console.log("urlToGet in apiGetWait:", urlToGet);
   var getter = $.ajax({
     url: urlToGet,
     method: "GET",
     datatype: "json"}
   );
   getter.fail(function() {console.log('error in apiGetWait')})
-  console.log("apiGetWait getter = ", getter);
   return(getter);
 }
 //=======================================================
@@ -98,10 +95,7 @@ function apiGetWait(urlToGet) {
 //=======================================================
 // When the Bacon Oracle is complete, display the results.
 function baconOracleDone(response) {
-  console.log("response = ", response);
   if (response.status === "spellcheck") {
-    console.log('#actor1 = ', $('#actor1').val());
-    console.log('response.name = ', response.name);
     var actorNumber = (response.name.toUpperCase() === $('#actor1').val().toUpperCase()) ? 1 : 2;
     buildSpellList(response.matches, actorNumber);
 
@@ -112,7 +106,6 @@ function baconOracleDone(response) {
   } else if (response.status === "error") {
       clearResults();
       $('#connectionNumber').text(response.message);
-      console.log("Error with Bacon Oracle get")
 
   } else if (response.status === "success") {
 
@@ -133,11 +126,8 @@ function baconOracleDone(response) {
 
 //=======================================================
 function buildSpellList(nameArray, actorNumber) {
-  console.log("actorNumber: ", actorNumber);
-  console.log("nameArray = ", nameArray);
   $('#spellLists'+actorNumber).empty();
   nameArray.forEach( function(element) {
-    console.log("element = ", element);
    var nameOption = document.createElement("option");
 
    $(nameOption).val(element);
@@ -145,8 +135,6 @@ function buildSpellList(nameArray, actorNumber) {
    $(nameOption).text(element);
    $('#spellList'+actorNumber).append($(nameOption));
    $('#spellList'+actorNumber).show();
-   console.log("making spell checker visible ", actorNumber);
-console.log(nameOption)
   });
 }
 
@@ -157,13 +145,10 @@ console.log(nameOption)
 function removeYears(artistWorkStringArray) {
   artistWorkStringArray.forEach(function (element, index) {
     var indexPara = element.indexOf('(');
-console.log("para index: ", element, indexPara);
     if (indexPara === -1) {
       artistWorkStringArray[index]=element.slice(0);
     } else {
-console.log("doing the para extraction!");
       artistWorkStringArray[index]=element.slice(0, indexPara);
-console.log("Work without para: ", artistWorkStringArray[index]);
     }
   });
 }
@@ -172,27 +157,23 @@ console.log("Work without para: ", artistWorkStringArray[index]);
 //=======================================================
 // Build the text connection display
 function buildSeparationDisplay(separationArray) {
-console.log("separationArray = ", separationArray);
+
   //The first element is an artist, and the array
   // alternates between artists and works from there on.
-  console.log("separationArray.length = ", separationArray.length);
   for (var i = 0; i < separationArray.length; i+=2) {
 
     //Display artist, chain, and work.  First the artist.
     displayNode(separationArray[i], $('#resultsChain'));      // artist
-console.log("displaying artist");
 
     //If this is not the last artist, display the connecting work.
     if ((i+2) <= separationArray.length) {
       displayChainNode($('#resultsChain'));
       // displayNode("|", "chain", $('#resultsChain'));                   // chain link
       displayNode(separationArray[i+1], $('#resultsChain'));  // work
-console.log("displaying movie");
 
       //If there are more artists to follow,
       // display another chain.
       if ((i+2) < separationArray.length)  {
-console.log("i+2= ", i+2,  separationArray.length)
         displayChainNode($('#resultsChain'));
         // displayNode("|", "chain", $('#resultsChain'));                  // chain link
       }
@@ -206,15 +187,12 @@ console.log("i+2= ", i+2,  separationArray.length)
 // Build the URLs for the image connection display
 function buildSeparationDisplayImgUrls(separationArray) {
   var separationArrayUrls=[];
-console.log("separationArray = ", separationArray);
   for (var i = 0; i < separationArray.length; i+=2) {
     separationArrayUrls = separationArray.map(function(element, index) {
       if ((index % 2) === 0) {
         var url = getImgUrl(element, "artist");
-console.log("url of artist: ", url);
       } else {
         var url = getImgUrl(element, "title");
-console.log("url of movie: ", url);
       }
       return url;
     });
@@ -232,18 +210,14 @@ function buildSeparationDisplayImgs(separationArray) {
   var idNameArray = [];
   var urlArray = [];
 
-console.log("separationArrayNameUrls = ", separationArrayNameUrls);
   Promise.all(
     separationArrayNameUrls.map(apiGetWait)).then (
       function(idArray) {
-        console.log("idArray = ", idArray);
         idNameArray = saveIdNames(idArray);
         urlArray = idArray.map(convertUrlToId);
-        console.log("urlArray = ", urlArray);
          Promise.all (
           urlArray.map(apiGetWait)).then (
             function(imgArray) {
-              console.log("imgArray = ", imgArray);
               $('#connectionNumber').text(imgArray.length);
               displaySeparationImgs(imgArray, idNameArray);
               // console.log($('img.caption'));
@@ -271,7 +245,7 @@ function saveIdNames(idArray) {
     }
     idNameArray.push({"id":id, "name": name});
   })
-  console.log(idNameArray);
+
   return(idNameArray);
 }
 
@@ -284,22 +258,18 @@ function elementIsArtist(obj) {
 // Build one URL for either the movie or person location.
 function convertUrlToId(element, index) {
   var id = "";
-  console.log("element = ", element);
   if (element.results.length === 0) {
     console.log("No image for this element");
+  } else if ( element.results[0].hasOwnProperty('title') ) {
+    //This is a movie, so get the movie id.
+    id = tmdbUrlBase  + "movie/" + element.results[0].id + "/images" + tmdbUrlKey;
+
   } else {
-    if ( element.results[0].hasOwnProperty('title') ) {
-      //This is a movie, so get the movie id.
-      id = tmdbUrlBase  + "movie/" + element.results[0].id + "/images" + tmdbUrlKey;
-
-    } else {
       //This is a person, so get the person id.
-      id = tmdbUrlBase + "person/" + element.results[0].id + "/images" + tmdbUrlKey;
-    }
-    console.log("id = ", id);
-
-    return(id);
+    id = tmdbUrlBase + "person/" + element.results[0].id + "/images" + tmdbUrlKey;
   }
+
+  return(id);
 }
 
 //=======================================================
@@ -309,23 +279,15 @@ function convertUrlToId(element, index) {
 // with chain nodes in between.
 function displaySeparationImgs(separationArray, idNameArray) {
   var name = "";
-console.log("separationArray = ", separationArray);
-console.log("idNameArray = ", idNameArray);
   // Cycle through each element of the response to add to response display
   for (var i = 0; i < separationArray.length; i+=2) {
     //Display artist, chain, and work.  First the artist.
-    console.log("calling displayImgNode with artist", i, separationArray[i]);
-
     //Get the name of this image for later retrieval of TMDB info.
 
     var id = separationArray[i]["id"];
-    console.log("id inside displaySeparationImgs = ", id);
     for (var j = 0; j < idNameArray.length && idNameArray[j] !== id; j++) {
       name = idNameArray[j]["name"];
     }
-console.log(name);
-console.log("separationArray[i]", separationArray[i]);
-console.log(idNameArray, "idNameArray was:");
     var artistFilePath =
     displayImgNode(separationArray[i], "artist", idNameArray[i].name);      // artist
 
@@ -333,7 +295,6 @@ console.log(idNameArray, "idNameArray was:");
     if ((i+2) <= separationArray.length) {
       displayChainNode($('#resultsImgChain'));
       // displayNode("|", "chain", $('#resultsImgChain'));                   // chain link
-      console.log("calling displayImgNode with movie", i+1, separationArray[i+1]);
       displayImgNode(separationArray[i+1], "movie", idNameArray[i+1].name);  // work
 
       //If there are more artists to follow,
@@ -357,7 +318,6 @@ function getImgUrl(text, type) {
   } else {  //movie
     filePath = getImageMovieUrl(text);
   }
-  console.log("filepath = ", filePath);
   return(filePath);
 }
 
@@ -398,20 +358,15 @@ function displayChainNode(container) {
 //=======================================================
 // Display one image node of the chain to the results display.
 function displayImgNode(image, type, name) {
-  console.log("IMAGE = ", image);
   var filePath = imgFilePath(image, type);
-  console.log("FILEPATH = ", filePath);
 
   var divNode = document.createElement("div");
   $('#resultsImgChain').append(divNode);
 
   var imgNode = document.createElement("img");
-console.log("image = ", image);
   $(imgNode).attr("src", filePath);
   $(imgNode).prop("class", "imgChainNode");
   $(imgNode).attr("data-caption", name);
-console.log("imgNode = ", imgNode);
-console.log($(imgNode).attr("src"));
   $(divNode).append(imgNode);
   var captionNode = document.createElement("p");
   $(captionNode).text(name);
@@ -422,24 +377,19 @@ console.log($(imgNode).attr("src"));
 // Build the image file path for the image location.
 function imgFilePath(filePath, type) {
   var wholeFilePath ="";
-  console.log("FILEPATHHHH = ", filePath, "type = ", type);
-  console.log("type =", type);
   if (type === "artist") {
     if (filePath["profiles"].length === 0) {
-      console.log("no picture");
       wholeFilePath = anonymousFile;
     } else {
       wholeFilePath = tmdbImgUrlPerson + filePath["profiles"][0]["file_path"];
     }
   } else {
       if (filePath["backdrops"].length === 0) {
-        console.log("no picture");
         wholeFilePath = anonymousFile;
       } else {
          wholeFilePath = tmdbImgUrlMovie + filePath["backdrops"][0]["file_path"];
       }
   }
-console.log("filePath =" , wholeFilePath);
   return (wholeFilePath);
 }
 
